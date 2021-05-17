@@ -1,10 +1,9 @@
 import numpy as np
-from matplotlib import pyplot as plt
 from ypstruct import structure
 import GenetikAlgoritma as ga
 
 # Burada verilen değerler test amaçlıdır, bir değer girilmeden fonksiyon çağırılırsa kullanılır
-def simulasyon (yeniden_siparis_noktasi=np.random.randint(0, 150),hedef = 150):
+def simulasyon (yeniden_siparis_noktasi,hedef = 150):
     baslangic_stok = 100
     donem = 100
     # Kaç dönem simülasyon yapılacaksa o kadar random sayı ataması yapılıyor
@@ -61,7 +60,7 @@ def simulasyon (yeniden_siparis_noktasi=np.random.randint(0, 150),hedef = 150):
         b = b + Toplam
 
     # Ortalama maliyeti döndürüyoruz
-    return round(b/donem)
+    return b/donem
 
 # Problem Tanımı
 problem = structure()           # Problem değişkeni içerisinde 1den fazla veri gönderebilmek için
@@ -81,13 +80,3 @@ params.sigma = 0.1
 
 # GA çalıştır
 out = ga.run(problem,params)
-
-# Sonuçlar
-plt.plot(out.bestcost)
-# plt.semilogy(out.bestcost)
-plt.xlim(0, params.maxit)
-plt.xlabel('İterasyonlar')
-plt.ylabel('En düşük maliyet')
-plt.title('Genetik Algoritma')
-plt.grid(True)
-plt.show()

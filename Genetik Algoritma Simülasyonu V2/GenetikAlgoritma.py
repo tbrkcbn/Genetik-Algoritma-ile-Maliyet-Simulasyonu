@@ -3,7 +3,7 @@ from ypstruct import structure
 
 
 def run(problem,params):
-
+    temp = 0
     # Problem Bilgisinin alınması
     costfunc = problem.costfunc
     nvar = problem.nvar
@@ -22,7 +22,8 @@ def run(problem,params):
 
     # Boş birey şablonu
     empty_individual = structure()
-    empty_individual.position = None
+    empty_individual.hedef = None
+    empty_individual.yenidenSiparis = None
     empty_individual.cost = None
 
 
@@ -32,12 +33,13 @@ def run(problem,params):
 
 
     # Popülasyonun (Boş bireylerden oluşan bir array) oluşturulması, bu kısım ilk iterasyon için hazırlandı, sonrasında 2,3,4.... n iterasyona kadar alttaki döngü çalışacak
-    pop = empty_individual.repeat(npop)                                 # önceden belirlenmiş büyüklükte bir popülasyon oluşturulması
+    pop = empty_individual.repeat(npop)                                         # önceden belirlenmiş büyüklükte bir popülasyon oluşturulması
     for i in range(0,npop):
-        pop[i].position = np.random.uniform(varmin, varmax, nvar)       # önceden belirlenmiş sınırlar içerisinde, önceden belirlenmiş büyüklüğe göre
-        pop[i].cost = costfunc(pop[i].position[0])                      #rastgele pozisyonların oluşturulması
-        if pop[i].cost < bestsol.cost:                                  # eğer popülasyondaki i. bireyin (kromozomun) maliyet değeri
-            bestsol = pop[i].deepcopy()                                 #en iyi bireyin maliyetinden küçükse en iyi değer değiştirilir
+        pop[i].yenidenSiparis = np.random.uniform(varmin, varmax, nvar)         # önceden belirlenmiş sınırlar içerisinde, önceden belirlenmiş büyüklüğe göre
+        pop[i].hedef = np.random.uniform(pop[i].yenidenSiparis[0], varmax, nvar)
+        pop[i].cost = costfunc(pop[i].yenidenSiparis[0], pop[i].hedef[0])       #rastgele pozisyonların oluşturulması
+        if pop[i].cost < bestsol.cost:                                          # eğer popülasyondaki i. bireyin (kromozomun) maliyet değeri
+            bestsol = pop[i].deepcopy()                                         #en iyi bireyin maliyetinden küçükse en iyi değer değiştirilir
 
 
     # En iyi yineleme maliyeti
@@ -63,20 +65,22 @@ def run(problem,params):
             c2 = mutate(c2, mu, sigma)
 
             # Sınırların eklenmesi
-            apply_bound(c1, varmin, varmax)
-            apply_bound(c2, varmin, varmax)
+            # apply_bound(c1, varmin, varmax)
+            # apply_bound(c2, varmin, varmax)
 
             # Sonuçların değerlendirilmesi
 
             # Birinci çocuğun değerlendirilmesi
-
-            c1.cost = costfunc(c1.position[0])
+            c1.yenidenSiparis.sort()
+            c1.hedef.sort()
+            c1.cost = costfunc(c1.yenidenSiparis[0], c1.hedef[0])
             if c1.cost < bestsol.cost:
                 bestsol = c1.deepcopy()
 
             # İkinci çocuğun değerlendirilmesi
-
-            c2.cost = costfunc(c2.position[0])
+            c2.yenidenSiparis.sort()
+            c2.hedef.sort()
+            c2.cost = costfunc(c2.yenidenSiparis[0], c2.hedef[0])
             if c2.cost < bestsol.cost:
                 bestsol = c2.deepcopy()
 
@@ -84,11 +88,11 @@ def run(problem,params):
             popc.append(c1)
             popc.append(c2)
 
-        # Merge
+        # yeni popülasyonun eski popülasyona eklenmesi
         pop += popc
-        # Sort
+        # en iyi sonuçların bulunması için sıralama
         sorted(pop, key = lambda  x: x.cost)
-        # Select
+        # popülasyon büyüklüğüne kadar olan (öreneğin ilk 50) kromozomun seçilip yeni iterasyon için popülasyon haline getirilmesi
         pop = pop[0:npop]
 
 
@@ -96,18 +100,12 @@ def run(problem,params):
 
         bestcost[it] = bestsol.cost
 
-        # Iterasyon bilgisinin print edilmesi
-
-        print("{}. İterasyondaki en iyi maliyet = {}".format(it+1, bestcost[it]))
-
-
-    # Çıktı sonuçları
-    out = structure()
-    out.pop = pop
-    out.bestsol = bestsol
-    out.bestcost = bestcost
-    return out
-
+        # Iterasyon bilgisinin print edilmesi, sadece iyileştirme olduğunda ve son iterasyonun sonucunu print eder
+        if bestsol.yenidenSiparis[0] != temp:
+            print("{}. İterasyondaki yeniden sipariş noktası = {}, hedef = {},en iyi maliyet = {}".format(it + 1,bestsol.yenidenSiparis[0],bestsol.hedef[0],bestcost[it]))
+            temp = bestsol.yenidenSiparis[0]
+        if it == (maxit-1):
+            print("\n---------------------------------------------------\n\n{} dönem uygulanan optimizasyon sonucunda bulunan minimum maliyet = {}\nYeniden Sipariş Noktası = {}\nHedef = {}".format(maxit,bestcost[it],bestsol.yenidenSiparis[0],bestsol.hedef[0]))
 
 # iki farklı ebeveynden 2 farklı çocuk üretimi
 def crossover(p1, p2, gamma = 0.1):
@@ -116,11 +114,16 @@ def crossover(p1, p2, gamma = 0.1):
     c2 = p2.deepcopy()
 
     # Alpha değeri tanımlanıyor
-    alpha = np.random.uniform(-gamma,1+gamma, *c1.position.shape)
+    yenidenSiparisAlpha = np.random.uniform(-gamma,1+gamma, *c1.yenidenSiparis.shape)
 
-    # Crossover (Çaprazlama işlemi) ile 2 çocuk üretiliyor
-    c1.position =     alpha*p1.position + (1-alpha)*p2.position
-    c2.position = (1-alpha)*p1.position +     alpha*p2.position
+    # Crossover (Yeniden sipariş noktası için)
+    c1.yenidenSiparis =     yenidenSiparisAlpha*p1.yenidenSiparis + (1-yenidenSiparisAlpha)*p2.yenidenSiparis
+    c2.yenidenSiparis = (1-yenidenSiparisAlpha)*p1.yenidenSiparis +     yenidenSiparisAlpha*p2.yenidenSiparis
+
+    hedefAlpha = np.random.uniform(-gamma, 1 + gamma, *c1.hedef.shape)
+    # Crossover (Hedef için)
+    c1.hedef =     hedefAlpha*p1.hedef + (1-hedefAlpha)*p2.hedef
+    c2.hedef = (1-hedefAlpha)*p1.hedef +     hedefAlpha*p2.hedef
 
     return c1,c2
 
@@ -130,13 +133,21 @@ def mutate(x, mu, sigma):
     # Mutasyona uğrayacak değer için x'den bilgiler kopyalanıyor
     y = x.deepcopy()
 
-    flag = np.random.rand(*x.position.shape) <= mu
-    ind = np.argwhere(flag)
+    yenidenSiparisFlag = np.random.rand(*x.yenidenSiparis.shape) <= mu
+    ind = np.argwhere(yenidenSiparisFlag)
 
-    y.position[ind] = x.position[ind] + sigma*np.random.randn(*ind.shape)
+    y.yenidenSiparis[ind] = x.yenidenSiparis[ind] + sigma*np.random.randn(*ind.shape)
+
+    hedefFlag = np.random.rand(*x.hedef.shape) <= mu
+    ind = np.argwhere(hedefFlag)
+
+    y.hedef[ind] = x.hedef[ind] + sigma*np.random.randn(*ind.shape)
 
     return y
 
 def apply_bound(x, varmin, varmax):
-    x.position = np.maximum(x.position,varmin)
-    x.position = np.minimum(x.position,varmax)
+    x.yenidenSiparis = np.maximum(x.yenidenSiparis,varmin)
+    x.yenidenSiparis = np.minimum(x.yenidenSiparis,varmax)
+
+    x.hedef = np.maximum(x.hedef,x.yenidenSiparis)
+    x.hedef = np.minimum(x.hedef,varmax)
