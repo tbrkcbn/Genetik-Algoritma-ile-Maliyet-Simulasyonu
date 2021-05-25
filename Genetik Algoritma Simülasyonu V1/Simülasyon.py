@@ -3,7 +3,7 @@ from ypstruct import structure
 import GenetikAlgoritma as ga
 
 # Burada verilen değerler test amaçlıdır, bir değer girilmeden fonksiyon çağırılırsa kullanılır
-def simulasyon (yeniden_siparis_noktasi= 50,hedef = 150):
+def simulasyon (yeniden_siparis_noktasi,hedef):
     baslangic_stok = 100
     donem = 100
     # Kaç dönem simülasyon yapılacaksa o kadar random sayı ataması yapılıyor
@@ -17,16 +17,14 @@ def simulasyon (yeniden_siparis_noktasi= 50,hedef = 150):
     yoksatma_maliyeti = 2
     siparis_maliyeti = 10
 
-    b = 0
+
     karsilanmayan_talep = 0
     kacinciDonem = 0
     for i in talepler:
         i = i + karsilanmayan_talep
         if baslangic_stok <= yeniden_siparis_noktasi:
-            x = hedef - baslangic_stok
-            y = np.random.uniform(0.8, 1)
-            baslangic_stok = (x * y) + baslangic_stok
-            maliyetler[2][kacinciDonem] = x * siparis_maliyeti
+            baslangic_stok = hedef - baslangic_stok
+            maliyetler[2][kacinciDonem] = baslangic_stok * siparis_maliyeti
             maliyetler[1][kacinciDonem] = 0
             maliyetler[0][kacinciDonem] = 0
             if i <= baslangic_stok:
@@ -70,10 +68,9 @@ def simulasyon (yeniden_siparis_noktasi= 50,hedef = 150):
         hesapArrayi = np.sum(maliyetler, axis=0)
 
     Toplam = np.sum(hesapArrayi)
-    b = Toplam / donem
 
     # Ortalama maliyeti döndürüyoruz
-    return b
+    return Toplam / donem
 
 # Problem Tanımı
 problem = structure()           # Problem değişkeni içerisinde 1den fazla veri gönderebilmek için
@@ -84,7 +81,7 @@ problem.varmax = 150            # Değişkenin üst sınırı
 
 # GA parametreleri
 params = structure()
-params.maxit = 1000             # Maksimum iterasyon sayısı
+params.maxit = 100              # Maksimum iterasyon sayısı
 params.npop = 50                # Popülasyon büyüklüğü (kromozom sayısı)
 params.pc = 1                   # Üretilecek olan çocuk sayısının popülasyona oranı
 params.gamma = 0.1
