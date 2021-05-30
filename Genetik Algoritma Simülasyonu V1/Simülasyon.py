@@ -17,7 +17,6 @@ def simulasyon (yeniden_siparis_noktasi,hedef):
     yoksatma_maliyeti = 2
     siparis_maliyeti = 10
 
-
     karsilanmayan_talep = 0
     kacinciDonem = 0
     for i in talepler:
@@ -68,7 +67,6 @@ def simulasyon (yeniden_siparis_noktasi,hedef):
         hesapArrayi = np.sum(maliyetler, axis=0)
 
     Toplam = np.sum(hesapArrayi)
-
     # Ortalama maliyeti döndürüyoruz
     return Toplam / donem
 
