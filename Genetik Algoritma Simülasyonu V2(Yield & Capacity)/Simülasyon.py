@@ -92,7 +92,7 @@ problem.varmax = 150            # Değişkenin üst sınırı
 
 # GA parametreleri
 params = structure()
-params.maxit = 100              # Maksimum iterasyon sayısı
+params.maxit = 1000             # Maksimum iterasyon sayısı
 params.npop = 50                # Popülasyon büyüklüğü (kromozom sayısı)
 params.pc = 1                   # Üretilecek olan çocuk sayısının popülasyona oranı
 params.gamma = 0.1
@@ -101,52 +101,47 @@ params.sigma = 0.1
 
 # GA çalıştır
 ciktilar = ga.run(problem,params)
+
+# Çıktılardan alınan verilerin isimlendirilmesi
 ortalamaMaliyetler = np.zeros([params.maxit])
 eldeBulundurmaMaliyetleri = np.zeros([params.maxit])
 yoksatmaMaliyetleri = np.zeros([params.maxit])
 siparisMaliyetleri = np.zeros([params.maxit])
 yenidenSiparisDegerleri = np.zeros([params.maxit])
 hedefDegerleri = np.zeros([params.maxit])
+iterasyonlar = np.zeros([params.maxit])
 
 for i in range(len(ciktilar)):
     ortalamaMaliyetler[i] = ciktilar[i].cost
     eldeBulundurmaMaliyetleri[i] = ciktilar[i].elde_bulundurma_maliyeti
     yoksatmaMaliyetleri[i] = ciktilar[i].yoksatma_maliyeti
     siparisMaliyetleri[i] = ciktilar[i].siparis_maliyeti
-    yenidenSiparisDegerleri = ciktilar[i].yenidenSiparis[0]
-    hedefDegerleri = ciktilar[i].hedef[0]
+    yenidenSiparisDegerleri[i] = ciktilar[i].yenidenSiparis[0]
+    hedefDegerleri[i] = ciktilar[i].hedef[0]
+    iterasyonlar[i] = i+1
 
-fig, ax = plt.subplots()
-fig.subplots_adjust(right=0.75)
+# Çıktıların grafikler ile gösterilmesi
+plt.plot(iterasyonlar,eldeBulundurmaMaliyetleri)
 
-twin1 = ax.twinx()
-twin2 = ax.twinx()
+plt.plot(iterasyonlar,yoksatmaMaliyetleri)
 
-# Offset the right spine of twin2.  The ticks and label have already been
-# placed on the right by twinx above.
-twin2.spines.right.set_position(("axes", 1.2))
+plt.plot(iterasyonlar,siparisMaliyetleri)
 
-p1, = ax.plot(eldeBulundurmaMaliyetleri, "b-", label="Elde Bulundurma")
-p2, = twin1.plot(yoksatmaMaliyetleri, "r-", label="Yoksatma")
-p3, = twin2.plot(siparisMaliyetleri, "g-", label="Sipariş")
+plt.plot(iterasyonlar,ortalamaMaliyetler)
 
-ax.set_xlim(0, params.maxit)
+plt.xlabel('İterasyonlar')
+plt.ylabel('Maliyetler')
+plt.legend(['Elde Bulundurma','Yoksatma','Sipariş','Toplam'])
+plt.title('Proje Adı')
+plt.show()
 
-ax.set_xlabel("İterasyonlar")
-ax.set_ylabel("Elde Bulundurma")
-twin1.set_ylabel("Yoksatma")
-twin2.set_ylabel("Sipariş")
 
-ax.yaxis.label.set_color(p1.get_color())
-twin1.yaxis.label.set_color(p2.get_color())
-twin2.yaxis.label.set_color(p3.get_color())
+plt.plot(iterasyonlar,hedefDegerleri)
 
-tkw = dict(size=4, width=1.5)
-ax.tick_params(axis='y', colors=p1.get_color(), **tkw)
-twin1.tick_params(axis='y', colors=p2.get_color(), **tkw)
-twin2.tick_params(axis='y', colors=p3.get_color(), **tkw)
-ax.tick_params(axis='x', **tkw)
+plt.plot(iterasyonlar,yenidenSiparisDegerleri)
 
-ax.legend(handles=[p1, p2, p3])
-
+plt.xlabel('İterasyonlar')
+plt.ylabel('Hedef & Y.Siparş Değerleri')
+plt.legend(['Hedef','Yeniden Sipariş'])
+plt.title('Proje Adı')
 plt.show()
