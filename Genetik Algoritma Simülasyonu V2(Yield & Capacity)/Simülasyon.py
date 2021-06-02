@@ -18,11 +18,11 @@ def simulasyon (yeniden_siparis_noktasi,hedef):
     yoksatma_maliyeti = 2
     siparis_maliyeti = 10
 
-    # random yield oluşturulması için alt ve üst sınırların tanımlanması
+    # random yield oluşturulması için alt ve üst sınırların tanımlanması, min = max = 1 = yield kısıtı yok
     yieldMin = 1
     yieldMax = 1
 
-    # random Capacity oluşturulması için
+    # random Capacity oluşturulması için, np.inf = kapasite kısıtı yok
     randomCapacity = np.inf
 
     karsilanmayan_talep = 0
