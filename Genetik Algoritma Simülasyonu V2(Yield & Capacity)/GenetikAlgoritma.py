@@ -41,7 +41,11 @@ def run(problem,params):
     pop = empty_individual.repeat(npop)                                         # önceden belirlenmiş büyüklükte bir popülasyon oluşturulması
     for i in range(0,npop):
         pop[i].yenidenSiparis = np.random.uniform(varmin, varmax, nvar)         # önceden belirlenmiş sınırlar içerisinde, önceden belirlenmiş büyüklüğe göre
-        pop[i].hedef = np.random.uniform(pop[i].yenidenSiparis[0], varmax, nvar)
+        check = np.random.uniform(pop[i].yenidenSiparis[0], varmax, nvar)
+        if(check[0] > pop[i].yenidenSiparis[0]):
+            pop[i].hedef = check
+        else:
+            pop[i].hedef = check+1
         results = costfunc(pop[i].yenidenSiparis[0], pop[i].hedef[0])
         pop[i].cost = results[0]
         pop[i].elde_bulundurma_maliyeti = results[1]
@@ -89,7 +93,7 @@ def run(problem,params):
             c1.elde_bulundurma_maliyeti = results[1]
             c1.yoksatma_maliyeti = results[2]
             c1.siparis_maliyeti = results[3]
-            if c1.cost < bestsol.cost:
+            if (c1.cost < bestsol.cost) and (c1.hedef[0] > c1.yenidenSiparis[0]):
                 bestsol = c1.deepcopy()
 
             # İkinci çocuğun değerlendirilmesi
@@ -100,7 +104,7 @@ def run(problem,params):
             c2.elde_bulundurma_maliyeti = results[1]
             c2.yoksatma_maliyeti = results[2]
             c2.siparis_maliyeti = results[3]
-            if c2.cost < bestsol.cost:
+            if (c2.cost < bestsol.cost) and (c2.hedef[0] > c2.yenidenSiparis[0]):
                 bestsol = c2.deepcopy()
 
             # Üretilen çocukların popülasyona dahil edilmesi

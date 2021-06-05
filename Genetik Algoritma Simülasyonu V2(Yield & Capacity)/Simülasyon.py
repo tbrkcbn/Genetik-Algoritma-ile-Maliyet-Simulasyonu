@@ -8,22 +8,22 @@ def simulasyon (yeniden_siparis_noktasi,hedef):
     baslangic_stok = 100
     donem = 365
     # Kaç dönem simülasyon yapılacaksa o kadar random sayı ataması yapılıyor
-    talepler = np.random.normal(100, 20, donem)
+    talepler = np.random.normal(100, 30, donem)
     maliyetler = np.zeros([3,donem])
     # maliyetler [0][0] -> Elde bulundurma maliyeti
     # maliyetler [0][1] -> Yoksatma maliyeti
     # maliyetler [0][2] -> Sipariş maliyeti
 
     elde_bulundurma_maliyeti = 1
-    yoksatma_maliyeti = 2
+    yoksatma_maliyeti = 5
     siparis_maliyeti = 10
 
     # random yield oluşturulması için alt ve üst sınırların tanımlanması, min = max = 1 = yield kısıtı yok
-    yieldMin = 1
+    yieldMin = 0.8
     yieldMax = 1
 
     # random Capacity oluşturulması için, np.inf = kapasite kısıtı yok
-    randomCapacity = np.inf
+    randomCapacity = 100
 
     karsilanmayan_talep = 0
     kacinciDonem = 0
@@ -132,7 +132,6 @@ plt.plot(iterasyonlar,ortalamaMaliyetler)
 plt.xlabel('İterasyonlar')
 plt.ylabel('Maliyetler')
 plt.legend(['Elde Bulundurma','Yoksatma','Sipariş','Toplam'])
-plt.title('Proje Adı')
 plt.show()
 
 
@@ -141,7 +140,6 @@ plt.plot(iterasyonlar,hedefDegerleri)
 plt.plot(iterasyonlar,yenidenSiparisDegerleri)
 
 plt.xlabel('İterasyonlar')
-plt.ylabel('Hedef & Y.Siparş Değerleri')
+plt.ylabel('Değerler')
 plt.legend(['Hedef','Yeniden Sipariş'])
-plt.title('Proje Adı')
 plt.show()
